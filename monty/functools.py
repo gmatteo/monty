@@ -382,7 +382,9 @@ def prof_main(main):
     Decorator for profiling main programs.
 
     Profiling is activated by prepending the command line options
-    supported by the original main program with the keyword `prof`.
+    supported by the original main program with the one of following keywords:
+         [`prof`, `tracemalloc`, `traceopen`]
+
     Example:
 
         $ script.py arg --foo=1
@@ -391,39 +393,76 @@ def prof_main(main):
 
         $ script.py prof arg --foo=1
 
-    The decorated main accepts two new arguments:
+    `prof`: profiles the code with `cProfile`.
+        In this case the decorated main accepts two new arguments:
 
         prof_file: Name of the output file with profiling data
             If not given, a temporary file is created.
         sortby: Profiling data are sorted according to this value.
             default is "time". See sort_stats.
+
+    `tracemalloc`: uses the tracemalloc module (py>3.4) to trace memory allocations
+
+    `traceopen`: prints the list of open files before exiting (require `psutil` module)
     """
     @wraps(main)
     def wrapper(*args, **kwargs):
         import sys
-        try:
+        do_prof, do_tracemalloc, do_traceopen = 3 * [False]
+        if len(sys.argv) > 1:
             do_prof = sys.argv[1] == "prof"
-            if do_prof: sys.argv.pop(1)
-        except Exception:
-            do_prof = False
+            do_tracemalloc = sys.argv[1] == "tracemalloc"
+            do_traceopen = sys.argv[1] == "traceopen"
 
-        if not do_prof:
-            sys.exit(main())
-        else:
+        if do_prof or do_tracemalloc or do_traceopen: sys.argv.pop(1)
+
+        if do_prof:
             print("Entering profiling mode...")
             import pstats, cProfile, tempfile
-            prof_file = kwargs.get("prof_file", None)
+            prof_file = kwargs.pop("prof_file", None)
             if prof_file is None:
                 _, prof_file = tempfile.mkstemp()
                 print("Profiling data stored in %s" % prof_file)
 
-            sortby = kwargs.get("sortby", "time")
+            sortby = kwargs.pop("sortby", "time")
             cProfile.runctx("main()", globals(), locals(), prof_file)
             s = pstats.Stats(prof_file)
             s.strip_dirs().sort_stats(sortby).print_stats()
-            if "retval" not in kwargs:
-                sys.exit(0)
-            else:
-                return kwargs["retval"]
+            return 0
+
+        elif do_tracemalloc:
+            print("Entering tracemalloc mode...")
+            # Requires py3.4
+            try:
+                import tracemalloc
+            except ImportError:
+                print("Error while trying to import tracemalloc (requires py3.4)")
+                raise SystemExit(1)
+
+            tracemalloc.start()
+            retcode = main(*args, **kwargs)
+            snapshot = tracemalloc.take_snapshot()
+            top_stats = snapshot.statistics('lineno')
+
+            n = min(len(top_stats), 20)
+            print("[Top %d]" % n)
+            for stat in top_stats[:20]:
+                print(stat)
+
+        elif do_traceopen:
+            try:
+                import psutil
+            except ImportError:
+                print("traceopen requires psutil module")
+                raise SystemExit(1)
+            import os
+            p = psutil.Process(os.getpid())
+            retcode = main(*args, **kwargs)
+            print("open_files", p.open_files())
+
+        else:
+            retcode = main(*args, **kwargs)
+
+        return retcode
 
     return wrapper
