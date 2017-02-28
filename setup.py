@@ -1,13 +1,16 @@
+import os
 from setuptools import setup, find_packages
 from io import open
 
-with open("README.md", "rt") as f:
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(current_dir, "README.rst"), "rt") as f:
     long_desc = f.read()
 
 setup(
     name="monty",
     packages=find_packages(),
-    version="0.9.0",
+    version="0.9.6",
     install_requires=["six"],
     extras_require={"yaml": ["pyyaml>=3.1"],},
     package_data={},

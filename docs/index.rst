@@ -4,21 +4,18 @@
    contain the root `toctree` directive.
 
 
-Monty - The Missing Complement to Python
-========================================
+Monty: Python Made Even Easier
+==============================
 
 .. image:: https://travis-ci.org/materialsvirtuallab/monty.png?branch=master
-.. image:: https://coveralls.io/repos/github/materialsvirtuallab/monty/badge.svg?branch=master :target: https://coveralls.io/github/materialsvirtuallab/monty?branch=master
+.. image:: https://coveralls.io/repos/github/materialsvirtuallab/monty/badge.svg?branch=master
 
 Monty is the missing complement to Python. Monty implements supplementary
 useful functions for Python that are not part of the standard library.
 Examples include useful utilities like transparent support for zipped files,
 useful design patterns such as singleton and cached_class, and many more.
 
-Why Monty?
-==========
-
-Python is a wonderful programming language and comes with "batteries
+Python is a great programming language and comes with "batteries
 included". However, even Python has missing functionality and/or quirks that
 make it more difficult to do many simple tasks. In the process of
 creating several large scientific frameworks based on Python,
@@ -31,45 +28,22 @@ Monty is created to serve as a complement to the Python standard library. It
 provides suite of tools to solve many common problems, and hopefully,
 be a resource to collect the best solutions.
 
-Compatibility
--------------
+Monty supports Python 2.7-3.x.
 
-Monty is tested to work on Python 2.7 and 3.x.
+Change Log
+==========
 
-Latest Change Log
-=================
-
-v0.9.0
+v0.9.6
 ------
-1. Improved default as and from_dict.
-
-v0.8.5
-------
-1. Minor bug fixes.
-
-v0.8.4
-------
-1. Support for bson fields in jsanitize.
-
-v0.8.2
-------
-1. Fasetr gzip.
-
-v0.8.1
-------
-1. Update gcd for deprecated fractions.gcd in py >= 3.5. Try math.gcd by default first.
+1. Allow private variable names (with leading underscores) to be auto-detected
+   in default MSONable.
 
 :doc:`Older versions </changelog>`
 
-Installing monty
-================
+Installation
+============
 
-The easiest way to install monty on any system is to use easy_install or
-pip, as follows::
-
-    easy_install monty
-
-or::
+Standard pip install::
 
     pip install monty
 
@@ -83,10 +57,10 @@ will reside. There are two recommended ways of using Monty.
 
 Method 1: Import the monty root::
 
-    import monty as mt
-    with mt.io.zopen("src.gz") as f:
+    import monty as mty
+    with mty.io.zopen("src.gz") as f:
         data = f.read()
-    with mt.io.zopen("dest.bz2", "wb") as f:
+    with mty.io.zopen("dest.bz2", "wb") as f:
         f.write(data)
 
 Method 2: Import specific functions as needed::
@@ -130,19 +104,24 @@ Below are some further examples of Monty's features::
     from monty.io import zopen, reverse_readline
     with zopen("myfile") as f:
         for line in reverse_readline(f):
-            print line
+            print(line)
 
     # A frozen dict (Immutable dict)
 
     from monty.collections import frozendict
     d = frozendict(a=1)
 
-API docs
---------
+    # A Fabric-inspired cd context, that allows one to change directory to
+    # execute code and transparently changes back to the current working
+    # directory
 
-The API docs are given below. The docs for most classes or methods are clear
-enough for usage. Where there is somewhat greater subtlety in the usage,
-examples are provided.
+    from monty.os import cd
+
+    with cd("/path/to/input_files") as f:
+        execute_code_using_files()
+
+API docs
+========
 
 .. toctree::
 

@@ -5,13 +5,6 @@ particularly useful for developers. E.g., deprecating methods / classes, etc.
 
 from __future__ import absolute_import
 
-__author__ = 'Shyue Ping Ong'
-__copyright__ = "Copyright 2014, The Materials Virtual Lab"
-__version__ = '0.1'
-__maintainer__ = 'Shyue Ping Ong'
-__email__ = 'ongsp@ucsd.edu'
-__date__ = '1/24/14'
-
 import re
 import logging
 import warnings
@@ -19,6 +12,13 @@ import os
 import subprocess
 import multiprocessing
 import functools
+
+__author__ = 'Shyue Ping Ong'
+__copyright__ = "Copyright 2014, The Materials Virtual Lab"
+__version__ = '0.1'
+__maintainer__ = 'Shyue Ping Ong'
+__email__ = 'ongsp@ucsd.edu'
+__date__ = '1/24/14'
 
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ class requires(object):
 
         @requires(scipy is not None, "scipy is not present.")
         def use_scipy():
-            print scipy.majver
+            print(scipy.majver)
 
     Args:
         condition: Condition necessary to use the class or function.
@@ -92,6 +92,13 @@ class requires(object):
 
 def get_ncpus():
     """
+    .. note::
+
+        If you are using Python >= 2.7, multiprocessing.cpu_count() already
+        provides the number of CPUs. In fact, this is the first method tried.
+        The purpose of this function is to cater to old Python versions that
+        still exist on many Linux style clusters.
+
     Number of virtual or physical CPUs on this system, i.e.
     user/real as output by time(1) when called with an optimally scaling
     userspace-only program. Return -1 if ncpus cannot be detected. Taken from:
