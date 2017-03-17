@@ -714,7 +714,7 @@ class ProfMainTest(unittest.TestCase):
         import sys
         @prof_main
         def main():
-            return sys.exit(1)
+            return "foo"
 
         # Have to change argv before calling main.
         # Will restore original values before returning.
@@ -725,7 +725,7 @@ class ProfMainTest(unittest.TestCase):
             sys.argv[1] = "prof"
 
         try:
-            assert main(retval="foo") == "foo"
+            main()
         finally:
             sys.argv = bkp_sysargv
 
