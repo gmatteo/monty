@@ -7,6 +7,14 @@ import os
 import tempfile
 import shutil
 
+try:
+    from pathlib import Path
+except ImportError:
+    try:
+        from pathlib2 import Path
+    except ImportError:
+        Path = None
+
 from monty.shutil import copy_r
 
 __author__ = "Shyue Ping Ong"
@@ -58,7 +66,7 @@ class ScratchDir(object):
         simple pass through, i.e., nothing happens.
 
         Args:
-            rootpath (str): The path in which to create temp subdirectories.
+            rootpath (str/Path): The path in which to create temp subdirectories.
                 If this is None, no temp directories will be created and
                 this will just be a simple pass through.
             create_symbolic_link (bool): Whether to create a symbolic link in
@@ -73,6 +81,9 @@ class ScratchDir(object):
                 .g., if output files are generated during the operation.
                 Defaults to False.
         """
+        if Path is not None and isinstance(rootpath, Path):
+            rootpath = str(rootpath)
+
         self.rootpath = os.path.abspath(rootpath) if rootpath is not None \
             else None
         self.cwd = os.getcwd()
@@ -95,7 +106,21 @@ class ScratchDir(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.rootpath is not None and os.path.exists(self.rootpath):
             if self.end_copy:
+                tempdir = tempfile.mkdtemp(dir=self.cwd)
+                copy_r(self.cwd, tempdir)
+                for f in os.listdir(self.cwd):
+                    fpath = os.path.join(self.cwd, f)
+                    try:
+                        if f != os.path.basename(tempdir):
+                            if os.path.isfile(fpath):
+                                os.remove(fpath)
+                            else:
+                                shutil.rmtree(fpath)
+                    except:
+                        # Ignore file not found.
+                        pass
                 copy_r(".", self.cwd)
+                shutil.rmtree(tempdir)
             shutil.rmtree(self.tempdir)
             os.chdir(self.cwd)
             if self.create_symbolic_link:

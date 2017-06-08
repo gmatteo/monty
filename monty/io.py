@@ -18,6 +18,14 @@ from io import open
 from monty.tempfile import ScratchDir as ScrDir
 from monty.dev import deprecated
 
+try:
+    from pathlib import Path
+except ImportError:
+    try:
+        from pathlib2 import Path
+    except ImportError:
+        Path = None
+
 __author__ = 'Shyue Ping Ong'
 __copyright__ = "Copyright 2014, The Materials Virtual Lab"
 __version__ = '0.1'
@@ -36,7 +44,7 @@ def zopen(filename, *args, **kwargs):
     files.
 
     Args:
-        filename (str): filename
+        filename (str/Path): filename or pathlib.Path.
         \*args: Standard args for python open(..). E.g., 'r' for read, 'w' for
             write.
         \*\*kwargs: Standard kwargs for python open(..).
@@ -44,6 +52,9 @@ def zopen(filename, *args, **kwargs):
     Returns:
         File-like object. Supports with context.
     """
+    if Path is not None and isinstance(filename, Path):
+        filename = str(filename)
+
     file_ext = filename.split(".")[-1].upper()
     if file_ext == "BZ2":
         if PY_VERSION[0] >= 3:
@@ -53,8 +64,8 @@ def zopen(filename, *args, **kwargs):
             if len(args) > 0:
                 args[0] = "".join([c for c in args[0] if c != "t"])
             if "mode" in kwargs:
-                kwargs["mode"] = "".join([c for c in kwargs["mode"] if c !=
-                                          "t"])
+                kwargs["mode"] = "".join([c for c in kwargs["mode"]
+                                          if c != "t"])
             return bz2.BZ2File(filename, *args, **kwargs)
     elif file_ext in ("GZ", "Z"):
         return gzip.open(filename, *args, **kwargs)
