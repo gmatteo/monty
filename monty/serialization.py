@@ -11,11 +11,24 @@ from monty.msgpack import default, object_hook
 
 try:
     import ruamel.yaml as yaml
+    try:  # Default to using CLoader and CDumper for speed.
+        from ruamel.yaml import CLoader as Loader
+        from ruamel.yaml import CDumper as Dumper
+    except ImportError:
+        from ruamel.yaml import Loader
+        from ruamel.yaml import Dumper
 except ImportError:
     try:
         import yaml
+        try:  # Default to using CLoader and CDumper for speed.
+            from yaml import CLoader as Loader
+            from yaml import CDumper as Dumper
+        except ImportError:
+            from yaml import Loader
+            from yaml import Dumper
     except ImportError:
         yaml = None
+
 
 try:
     import msgpack
@@ -60,7 +73,9 @@ def loadfn(fn, *args, **kwargs):
                 if yaml is None:
                     raise RuntimeError("Loading of YAML files is not "
                                        "possible as ruamel.yaml is not installed.")
-                return yaml.safe_load(fp, *args, **kwargs)
+                if "Loader" not in kwargs:
+                    kwargs["Loader"] = Loader
+                return yaml.load(fp, *args, **kwargs)
             else:
                 if "cls" not in kwargs:
                     kwargs["cls"] = MontyDecoder
@@ -98,7 +113,9 @@ def dumpfn(obj, fn, *args, **kwargs):
                 if yaml is None:
                     raise RuntimeError("Loading of YAML files is not "
                                        "possible as ruamel.yaml is not installed.")
-                yaml.safe_dump(obj, fp, *args, **kwargs)
+                if "Dumper" not in kwargs:
+                    kwargs["Dumper"] = Dumper
+                yaml.dump(obj, fp, *args, **kwargs)
             else:
                 if "cls" not in kwargs:
                     kwargs["cls"] = MontyEncoder
