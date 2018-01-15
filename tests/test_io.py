@@ -9,12 +9,10 @@ __date__ = '1/24/14'
 import unittest
 import os
 from io import open
-
 try:
     from pathlib import Path
 except ImportError:
-    from pathlib2 import Path
-
+    Path = None
 
 from monty.io import reverse_readline, zopen, FileLock, FileLockException, \
     reverse_readfile, get_open_fds
@@ -125,6 +123,8 @@ class ZopenTest(unittest.TestCase):
         with zopen(os.path.join(test_dir, "myfile"), mode="rt") as f:
             self.assertEqual(f.read(), "HelloWorld.\n\n")
 
+    @unittest.skipIf(Path is None, "Not Py3k")
+    def test_Path_objects(self):
         p = Path(test_dir) / "myfile_gz.gz"
 
         with zopen(p, mode="rt") as f:
@@ -145,6 +145,12 @@ class FileLockTest(unittest.TestCase):
 
     def tearDown(self):
         self.lock.release()
+
+
+class FuncTest(unittest.TestCase):
+
+    def test_get_open_fds(self):
+        self.assertTrue(get_open_fds() > 0)
 
 
 if __name__ == "__main__":

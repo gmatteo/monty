@@ -7,6 +7,8 @@ from __future__ import absolute_import, unicode_literals
 import json
 import datetime
 import six
+import inspect
+
 try:
     from inspect import getfullargspec as getargspec
 except ImportError:
@@ -69,28 +71,27 @@ class MSONable(object):
         """
         d = {"@module": self.__class__.__module__,
              "@class": self.__class__.__name__}
-        if hasattr(self, "__init__"):
-            args = getargspec(self.__init__).args
-            for c in args:
-                if c != "self":
-                    try:
-                        a = self.__getattribute__(c)
+        args = getargspec(self.__class__.__init__).args
+        for c in args:
+            if c != "self":
+                try:
+                    a = self.__getattribute__(c)
 
+                except AttributeError:
+                    try:
+                        a = self.__getattribute__("_" + c)
                     except AttributeError:
-                        try:
-                            a = self.__getattribute__("_" + c)
-                        except AttributeError:
-                            raise NotImplementedError(
-                                "Unable to automatically determine as_dict "
-                                "format from class. MSONAble requires all "
-                                "args to be present as either self.argname or "
-                                "self._argname, and kwargs to be present under"
-                                "a self.kwargs variable to automatically "
-                                "determine the dict format. Alternatively, "
-                                "you can implement both as_dict and from_dict.")
-                    if hasattr(a, "as_dict"):
-                        a = a.as_dict()
-                    d[c] = a
+                        raise NotImplementedError(
+                            "Unable to automatically determine as_dict "
+                            "format from class. MSONAble requires all "
+                            "args to be present as either self.argname or "
+                            "self._argname, and kwargs to be present under"
+                            "a self.kwargs variable to automatically "
+                            "determine the dict format. Alternatively, "
+                            "you can implement both as_dict and from_dict.")
+                if hasattr(a, "as_dict"):
+                    a = a.as_dict()
+                d[c] = a
         if hasattr(self, "kwargs"):
             d.update(**self.kwargs)
         if hasattr(self, "_kwargs"):
@@ -212,7 +213,7 @@ class MontyDecoder(json.JSONDecoder):
                 return np.array(d["data"], dtype=d["dtype"])
 
             elif (bson is not None) and modname == "bson.objectid" and \
-                            classname == "ObjectId":
+                    classname == "ObjectId":
                 return bson.objectid.ObjectId(d["oid"])
 
             return {self.process_decoded(k): self.process_decoded(v)
@@ -222,8 +223,8 @@ class MontyDecoder(json.JSONDecoder):
 
         return d
 
-    def decode(self, *args, **kwargs):
-        d = json.JSONDecoder.decode(self, *args, **kwargs)
+    def decode(self, s):
+        d = json.JSONDecoder.decode(self, s)
         return self.process_decoded(d)
 
 
@@ -258,7 +259,8 @@ def jsanitize(obj, strict=False, allow_bson=False):
         Sanitized dict that can be json serialized.
     """
     if allow_bson and (isinstance(obj, datetime.datetime) or \
-            (bson is not None and isinstance(obj, bson.objectid.ObjectId))):
+                       (bson is not None and isinstance(obj,
+                                                        bson.objectid.ObjectId))):
         return obj
     if isinstance(obj, (list, tuple)):
         return [jsanitize(i, strict=strict, allow_bson=allow_bson) for i in obj]
@@ -268,7 +270,7 @@ def jsanitize(obj, strict=False, allow_bson=False):
     elif isinstance(obj, dict):
         return {k.__str__(): jsanitize(v, strict=strict, allow_bson=allow_bson)
                 for k, v in obj.items()}
-    elif isinstance(obj, (int, float)):
+    elif isinstance(obj, six.integer_types + tuple([float])):
         return obj
     elif obj is None:
         return None
@@ -282,4 +284,3 @@ def jsanitize(obj, strict=False, allow_bson=False):
             else:
                 return jsanitize(obj.as_dict(), strict=strict,
                                  allow_bson=allow_bson)
-

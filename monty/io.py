@@ -13,18 +13,16 @@ import sys
 import time
 import errno
 import mmap
+import subprocess
+import io
 
-from io import open
 from monty.tempfile import ScratchDir as ScrDir
 from monty.dev import deprecated
 
 try:
     from pathlib import Path
 except ImportError:
-    try:
-        from pathlib2 import Path
-    except ImportError:
-        Path = None
+    Path = None
 
 __author__ = 'Shyue Ping Ong'
 __copyright__ = "Copyright 2014, The Materials Virtual Lab"
@@ -70,7 +68,7 @@ def zopen(filename, *args, **kwargs):
     elif file_ext in ("GZ", "Z"):
         return gzip.open(filename, *args, **kwargs)
     else:
-        return open(filename, *args, **kwargs)
+        return io.open(filename, *args, **kwargs)
 
 
 def reverse_readfile(filename):
@@ -259,7 +257,7 @@ class FileLock(object):
             self.acquire()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         """
         Activated at the end of the with statement. It automatically releases
         the lock if it isn't locked.
@@ -281,12 +279,10 @@ def get_open_fds():
 
     .. warning: will only work on UNIX-like OS-es.
     """
-    import subprocess
-    import os
-
     pid = os.getpid()
     procs = subprocess.check_output(["lsof", '-w', '-Ff', "-p", str(pid)])
+    procs = procs.decode("utf-8")
 
-    nprocs = len(filter(lambda s: s and s[0] == 'f' and s[1:].isdigit(), procs.split('\n')))
+    return len([s for s in procs.split('\n')
+                if s and s[0] == 'f' and s[1:].isdigit()])
 
-    return nprocs

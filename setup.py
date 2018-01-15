@@ -1,16 +1,16 @@
 import os
 from setuptools import setup, find_packages
-from io import open
+import io
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-with open(os.path.join(current_dir, "README.rst"), "rt") as f:
+with io.open(os.path.join(current_dir, "README.rst"), "rt") as f:
     long_desc = f.read()
 
 setup(
     name="monty",
     packages=find_packages(),
-    version="1.0.1",
+    version="1.0.2",
     install_requires=["six"],
     extras_require={"yaml": ["ruamel.yaml"],},
     package_data={},

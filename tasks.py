@@ -27,8 +27,8 @@ __date__ = "Apr 29, 2012"
 
 @task
 def make_doc(ctx):
-    with cd("docs"):
-        ctx.run("sphinx-apidoc -d 6 -o . -f ../monty")
+    with cd("docs_rst"):
+        ctx.run("sphinx-apidoc --separate -d 6 -o . -f ../monty")
         for f in glob.glob("*.rst"):
             if f.startswith('monty') and f.endswith('rst'):
                 newoutput = []
@@ -44,8 +44,8 @@ def make_doc(ctx):
                         else:
                             if not clean.endswith("tests"):
                                 suboutput.append(line)
-                            if clean.startswith("monty") and not clean.endswith(
-                                    "tests"):
+                            if clean.startswith(
+                                    "monty") and not clean.endswith("tests"):
                                 newoutput.extend(suboutput)
                                 subpackage = False
                                 suboutput = []
@@ -53,28 +53,35 @@ def make_doc(ctx):
                 with open(f, 'w') as fid:
                     fid.write("".join(newoutput))
         ctx.run("make html")
-        # ctx.run("cp _static/* _build/html/_static")
+
+        # ctx.run("cp _static/* ../docs/html/_static")
+
+    with cd("docs"):
+        ctx.run("cp -r html/* .")
+        ctx.run("rm -r html")
+        ctx.run("rm -r doctrees")
+        ctx.run("rm -r _sources")
 
         # This makes sure pymatgen.org works to redirect to the Gihub page
-        # ctx.run("echo \"pymatgen.org\" > _build/html/CNAME")
-        # Avoid ths use of jekyll so that _dir works as intended.
-        ctx.run("touch _build/html/.nojekyll")
+        # ctx.run("echo \"pymatgen.org\" > CNAME")
+        # Avoid the use of jekyll so that _dir works as intended.
+        ctx.run("touch .nojekyll")
 
 
 @task
 def update_doc(ctx):
-    with cd("docs/_build/html/"):
-        ctx.run("git pull")
+    ctx.run("git pull")
     make_doc(ctx)
-    with cd("docs/_build/html/"):
-        ctx.run("git add .")
-        ctx.run("git commit -a -m \"Update dev docs\"")
-        ctx.run("git push origin gh-pages")
+    ctx.run("git add .")
+    ctx.run("git commit -a -m \"Update dev docs\"")
+    ctx.run("git push")
 
 
 @task
 def publish(ctx):
-    ctx.run("python setup.py release")
+    ctx.run("rm dist/*.*", warn=True)
+    ctx.run("python setup.py register sdist bdist_wheel")
+    ctx.run("twine upload dist/*")
 
 
 @task
@@ -93,7 +100,7 @@ def setver(ctx):
 def release_github(ctx):
     desc = []
     read = False
-    with open("docs/index.rst") as f:
+    with open("docs_rst/index.rst") as f:
         for l in f:
             if l.strip() == "v" + ver:
                 read = True
