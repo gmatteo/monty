@@ -1,21 +1,14 @@
-__author__ = 'Shyue Ping Ong'
-__copyright__ = 'Copyright 2014, The Materials Virtual Lab'
-__version__ = '0.1'
-__maintainer__ = 'Shyue Ping Ong'
-__email__ = 'ongsp@ucsd.edu'
-__date__ = '1/24/14'
-
-
 import unittest
 import os
 from io import open
+
 try:
     from pathlib import Path
 except ImportError:
-    Path = None
+    Path = None  # type: ignore
 
 from monty.io import reverse_readline, zopen, FileLock, FileLockException, \
-    reverse_readfile, get_open_fds
+    reverse_readfile
 
 test_dir = os.path.join(os.path.dirname(__file__), 'test_files')
 
@@ -29,25 +22,23 @@ class ReverseReadlineTest(unittest.TestCase):
         order, i.e. the first line that is read corresponds to the last line.
         number
         """
-        with open(os.path.join(test_dir, "three_thousand_lines.txt")) as f:
+        with open(os.path.join(test_dir, "3000_lines.txt")) as f:
             for idx, line in enumerate(reverse_readline(f)):
                 self.assertEqual(int(line), self.NUMLINES - idx,
                                  "read_backwards read {} whereas it should "
                                  "have read {}".format(
                                      int(line), self.NUMLINES - idx))
 
-    def test_reverse_readfile_gz(self):
+    def test_reverse_readline_fake_big(self):
         """
-        We are making sure a file containing line numbers is read in reverse
-        order, i.e. the first line that is read corresponds to the last line.
-        number
+        Make sure that large textfiles are read properly
         """
-        with open(os.path.join(test_dir, "three_thousand_lines.txt")) as f:
-            for idx, line in enumerate(reverse_readline(f)):
+        with open(os.path.join(test_dir, "3000_lines.txt")) as f:
+            for idx, line in enumerate(reverse_readline(f, max_mem=0)):
                 self.assertEqual(int(line), self.NUMLINES - idx,
                                  "read_backwards read {} whereas it should "
                                  "have read {}".format(
-                                 int(line), self.NUMLINES - idx))
+                                     int(line), self.NUMLINES - idx))
 
     def test_reverse_readline_bz2(self):
         """
@@ -72,7 +63,6 @@ class ReverseReadlineTest(unittest.TestCase):
 
 
 class ReverseReadfileTest(unittest.TestCase):
-
     NUMLINES = 3000
 
     def test_reverse_readfile(self):
@@ -81,12 +71,12 @@ class ReverseReadfileTest(unittest.TestCase):
         order, i.e. the first line that is read corresponds to the last line.
         number
         """
-        fname = os.path.join(test_dir, "three_thousand_lines.txt")
+        fname = os.path.join(test_dir, "3000_lines.txt")
         for idx, line in enumerate(reverse_readfile(fname)):
             self.assertEqual(int(line), self.NUMLINES - idx,
                              "read_backwards read {} whereas it should "
                              "have read {}".format(
-                             int(line), self.NUMLINES - idx))
+                                 int(line), self.NUMLINES - idx))
 
     def test_reverse_readfile_gz(self):
         """
@@ -94,12 +84,25 @@ class ReverseReadfileTest(unittest.TestCase):
         order, i.e. the first line that is read corresponds to the last line.
         number
         """
-        fname = os.path.join(test_dir, "3000lines.txt.gz")
+        fname = os.path.join(test_dir, "3000_lines.txt.gz")
         for idx, line in enumerate(reverse_readfile(fname)):
             self.assertEqual(int(line), self.NUMLINES - idx,
                              "read_backwards read {} whereas it should "
                              "have read {}".format(
-                             int(line), self.NUMLINES - idx))
+                                 int(line), self.NUMLINES - idx))
+
+    def test_reverse_readfile_bz2(self):
+        """
+        We are making sure a file containing line numbers is read in reverse
+        order, i.e. the first line that is read corresponds to the last line.
+        number
+        """
+        fname = os.path.join(test_dir, "3000_lines.txt.bz2")
+        for idx, line in enumerate(reverse_readfile(fname)):
+            self.assertEqual(int(line), self.NUMLINES - idx,
+                             "read_backwards read {} whereas it should "
+                             "have read {}".format(
+                                 int(line), self.NUMLINES - idx))
 
     def test_empty_file(self):
         """
@@ -145,12 +148,6 @@ class FileLockTest(unittest.TestCase):
 
     def tearDown(self):
         self.lock.release()
-
-
-class FuncTest(unittest.TestCase):
-
-    def test_get_open_fds(self):
-        self.assertTrue(get_open_fds() > 0)
 
 
 if __name__ == "__main__":

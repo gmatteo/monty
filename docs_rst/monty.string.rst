@@ -1,7 +1,7 @@
-monty\.string module
-====================
+monty.string module
+===================
 
 .. automodule:: monty.string
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

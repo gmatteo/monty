@@ -2,30 +2,15 @@
 Temporary directory and file creation utilities.
 """
 
-from __future__ import absolute_import
 import os
 import tempfile
-import shutil
 
-try:
-    from pathlib import Path
-except ImportError:
-    try:
-        from pathlib2 import Path
-    except ImportError:
-        Path = None
+from pathlib import Path
 
-from monty.shutil import copy_r
-
-__author__ = "Shyue Ping Ong"
-__copyright__ = "Copyright 2012, The Materials Project"
-__version__ = "0.1"
-__maintainer__ = "Shyue Ping Ong"
-__email__ = "ongsp@ucsd.edu"
-__date__ = "3/6/14"
+from monty.shutil import copy_r, remove
 
 
-class ScratchDir(object):
+class ScratchDir:
     """
     .. note::
 
@@ -66,7 +51,7 @@ class ScratchDir(object):
         simple pass through, i.e., nothing happens.
 
         Args:
-            rootpath (str/Path): The path in which to create temp subdirectories.
+            rootpath (str/Path): Path in which to create temp subdirectories.
                 If this is None, no temp directories will be created and
                 this will just be a simple pass through.
             create_symbolic_link (bool): Whether to create a symbolic link in
@@ -106,24 +91,16 @@ class ScratchDir(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.rootpath is not None and os.path.exists(self.rootpath):
             if self.end_copy:
-                tempdir = tempfile.mkdtemp(dir=self.cwd)
-                copy_r(self.cwd, tempdir)
-                for f in os.listdir(self.cwd):
+                files = set(os.listdir(self.tempdir))
+                orig_files = set(os.listdir(self.cwd))
+
+                # First copy files over
+                copy_r(self.tempdir, self.cwd)
+
+                # Delete any files that are now gone
+                for f in orig_files - files:
                     fpath = os.path.join(self.cwd, f)
-                    try:
-                        if f != os.path.basename(tempdir):
-                            if os.path.isfile(fpath):
-                                os.remove(fpath)
-                            else:
-                                shutil.rmtree(fpath)
-                    except FileNotFoundError:
-                        # Ignore file not found.
-                        pass
-                copy_r(".", self.cwd)
-                shutil.rmtree(tempdir)
+                    remove(fpath)
 
             os.chdir(self.cwd)
-            shutil.rmtree(self.tempdir)
-
-            if self.create_symbolic_link:
-                os.remove(ScratchDir.SCR_LINK)
+            remove(self.tempdir)

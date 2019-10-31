@@ -1,7 +1,7 @@
-monty\.math module
-==================
+monty.math module
+=================
 
 .. automodule:: monty.math
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

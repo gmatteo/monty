@@ -1,7 +1,7 @@
-monty\.collections module
-=========================
+monty.collections module
+========================
 
 .. automodule:: monty.collections
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

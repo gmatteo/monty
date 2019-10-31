@@ -1,13 +1,6 @@
-__author__ = 'Shyue Ping Ong'
-__copyright__ = 'Copyright 2014, The Materials Virtual Lab'
-__version__ = '0.1'
-__maintainer__ = 'Shyue Ping Ong'
-__email__ = 'ongsp@ucsd.edu'
-__date__ = '1/24/14'
-
-
 import unittest
 import os
+import platform
 
 from monty.os.path import which, zpath, find_exts
 from monty.os import cd, makedirs_p
@@ -17,6 +10,7 @@ test_dir = os.path.join(os.path.dirname(__file__), 'test_files')
 
 class PathTest(unittest.TestCase):
 
+    @unittest.skipIf(platform.system() == "Windows", "Skip on windows")
     def test_which(self):
         py = which("python")
         self.assertEqual(os.path.basename(py), "python")
@@ -29,11 +23,11 @@ class PathTest(unittest.TestCase):
 
     def test_find_exts(self):
         self.assertTrue(len(find_exts(os.path.dirname(__file__), "py")) >= 18)
-        self.assertEqual(len(find_exts(os.path.dirname(__file__), "bz2")), 1)
+        self.assertEqual(len(find_exts(os.path.dirname(__file__), "bz2")), 2)
         self.assertEqual(len(find_exts(os.path.dirname(__file__), "bz2",
                                        exclude_dirs="test_files")), 0)
         self.assertEqual(len(find_exts(os.path.dirname(__file__), "bz2",
-                                       include_dirs="test_files")), 1)
+                                       include_dirs="test_files")), 2)
 
 
 class CdTest(unittest.TestCase):

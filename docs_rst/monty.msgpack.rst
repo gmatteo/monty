@@ -1,7 +1,7 @@
-monty\.msgpack module
-=====================
+monty.msgpack module
+====================
 
 .. automodule:: monty.msgpack
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

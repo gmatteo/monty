@@ -1,7 +1,7 @@
-monty\.json module
-==================
+monty.json module
+=================
 
 .. automodule:: monty.json
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

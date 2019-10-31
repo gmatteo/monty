@@ -1,19 +1,18 @@
-__author__ = 'Shyue Ping Ong'
-__copyright__ = 'Copyright 2014, The Materials Virtual Lab'
 __version__ = '0.1'
-__maintainer__ = 'Shyue Ping Ong'
-__email__ = 'ongsp@ucsd.edu'
-__date__ = '1/24/14'
 
-
+import os
 import unittest
 import numpy as np
 import json
 import datetime
-import six
 from bson.objectid import ObjectId
+from enum import Enum
 
+from . import __version__ as tests_version
 from monty.json import MSONable, MontyEncoder, MontyDecoder, jsanitize
+from monty.json import _load_redirect
+
+test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
 
 class GoodMSONClass(MSONable):
@@ -24,6 +23,31 @@ class GoodMSONClass(MSONable):
         self._c = c
         self._d = d
         self.kwargs = kwargs
+
+    def __eq__(self, other):
+        return (self.a == other.a and self.b == other.b and
+                self._c == other._c and self._d == other._d and
+                self.kwargs == other.kwargs)
+
+
+class GoodNestedMSONClass(MSONable):
+
+    def __init__(self, a_list, b_dict, c_list_dict_list, **kwargs):
+        assert isinstance(a_list, list)
+        assert isinstance(b_dict, dict)
+        assert isinstance(c_list_dict_list, list)
+        assert isinstance(c_list_dict_list[0], dict)
+        first_key = list(c_list_dict_list[0].keys())[0]
+        assert isinstance(c_list_dict_list[0][first_key], list)
+        self.a_list = a_list
+        self.b_dict = b_dict
+        self._c_list_dict_list = c_list_dict_list
+        self.kwargs = kwargs
+
+
+class EnumTest(MSONable, Enum):
+    a = 1
+    b = 2
 
 
 class MSONableTest(unittest.TestCase):
@@ -51,6 +75,14 @@ class MSONableTest(unittest.TestCase):
 
         self.bad_cls2 = BadMSONClass2
 
+        class AutoMSON(MSONable):
+
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+
+        self.auto_mson = AutoMSON
+
     def test_to_from_dict(self):
         obj = self.good_cls("Hello", "World", "Python")
         d = obj.as_dict()
@@ -65,6 +97,96 @@ class MSONableTest(unittest.TestCase):
         self.assertRaises(TypeError, self.bad_cls.from_dict, d)
         obj = self.bad_cls2("Hello", "World")
         self.assertRaises(NotImplementedError, obj.as_dict)
+        obj = self.auto_mson(2, 3)
+        d = obj.as_dict()
+        objd = self.auto_mson.from_dict(d)
+
+    def test_unsafe_hash(self):
+        GMC = GoodMSONClass
+        a_list = [GMC(1, 1.0, "one"), GMC(2, 2.0, "two")]
+        b_dict = {"first": GMC(3, 3.0, "three"), "second": GMC(4, 4.0, "four")}
+        c_list_dict_list = [
+            {
+                "list1": [
+                    GMC(5, 5.0, "five"),
+                    GMC(6, 6.0, "six"),
+                    GMC(7, 7.0, "seven"),
+                ],
+                "list2": [GMC(8, 8.0, "eight")],
+            },
+            {
+                "list3": [
+                    GMC(9, 9.0, "nine"),
+                    GMC(10, 10.0, "ten"),
+                    GMC(11, 11.0, "eleven"),
+                    GMC(12, 12.0, "twelve"),
+                ],
+                "list4": [GMC(13, 13.0, "thirteen"), GMC(14, 14.0, "fourteen")],
+                "list5": [GMC(15, 15.0, "fifteen")],
+            },
+        ]
+        obj = GoodNestedMSONClass(
+            a_list=a_list, b_dict=b_dict, c_list_dict_list=c_list_dict_list
+        )
+
+        self.assertEqual(
+            a_list[0].unsafe_hash().hexdigest(),
+            "ea44de0e2ef627be582282c02c48e94de0d58ec6",
+        )
+        self.assertEqual(
+            obj.unsafe_hash().hexdigest(), "44204c8da394e878f7562c9aa2e37c2177f28b81"
+        )
+
+    def test_version(self):
+        obj = self.good_cls("Hello", "World", "Python")
+        d = obj.as_dict()
+        self.assertEqual(d["@version"], tests_version)
+
+    def test_nested_to_from_dict(self):
+        GMC = GoodMSONClass
+        a_list = [GMC(1, 1.0, "one"),
+                  GMC(2, 2.0, "two")]
+        b_dict = {"first": GMC(3, 3.0, "three"),
+                  "second": GMC(4, 4.0, "four")}
+        c_list_dict_list = [{"list1": [GMC(5, 5.0, "five"),
+                                       GMC(6, 6.0, "six"),
+                                       GMC(7, 7.0, "seven")],
+                             "list2": [GMC(8, 8.0, "eight")]},
+                            {"list3": [GMC(9, 9.0, "nine"),
+                                       GMC(10, 10.0, "ten"),
+                                       GMC(11, 11.0, "eleven"),
+                                       GMC(12, 12.0, "twelve")],
+                             "list4": [GMC(13, 13.0, "thirteen"),
+                                       GMC(14, 14.0, "fourteen")],
+                             "list5": [GMC(15, 15.0, "fifteen")]}]
+        obj = GoodNestedMSONClass(a_list=a_list,
+                                  b_dict=b_dict,
+                                  c_list_dict_list=c_list_dict_list)
+        obj_dict = obj.as_dict()
+        obj2 = GoodNestedMSONClass.from_dict(obj_dict)
+        self.assertTrue([obj2.a_list[ii] == aa for ii, aa in enumerate(obj.a_list)])
+        self.assertTrue([obj2.b_dict[kk] == val for kk, val in obj.b_dict.items()])
+        self.assertEqual(len(obj.a_list), len(obj2.a_list))
+        self.assertEqual(len(obj.b_dict), len(obj2.b_dict))
+        s = json.dumps(obj_dict)
+        obj3 = json.loads(s, cls=MontyDecoder)
+        self.assertTrue([obj2.a_list[ii] == aa for ii, aa in enumerate(obj3.a_list)])
+        self.assertTrue([obj2.b_dict[kk] == val for kk, val in obj3.b_dict.items()])
+        self.assertEqual(len(obj3.a_list), len(obj2.a_list))
+        self.assertEqual(len(obj3.b_dict), len(obj2.b_dict))
+        s = json.dumps(obj, cls=MontyEncoder)
+        obj4 = json.loads(s, cls=MontyDecoder)
+        self.assertTrue([obj4.a_list[ii] == aa for ii, aa in enumerate(obj.a_list)])
+        self.assertTrue([obj4.b_dict[kk] == val for kk, val in obj.b_dict.items()])
+        self.assertEqual(len(obj.a_list), len(obj4.a_list))
+        self.assertEqual(len(obj.b_dict), len(obj4.b_dict))
+
+    def test_enum_serialization(self):
+        e = EnumTest.a
+        d = e.as_dict()
+        e_new = EnumTest.from_dict(d)
+        self.assertEqual(e_new.name, e.name)
+        self.assertEqual(e_new.value, e.value)
 
 
 class JsonTest(unittest.TestCase):
@@ -124,7 +246,7 @@ class JsonTest(unittest.TestCase):
         self.assertEqual(type(x), ObjectId)
 
     def test_jsanitize(self):
-        #clean_json should have no effect on None types.
+        # clean_json should have no effect on None types.
         d = {"hello": 1, "world": None}
         clean = jsanitize(d)
         self.assertIsNone(clean["world"])
@@ -134,14 +256,14 @@ class JsonTest(unittest.TestCase):
         d = {"hello": GoodMSONClass(1, 2, 3)}
         self.assertRaises(TypeError, json.dumps, d)
         clean = jsanitize(d)
-        self.assertIsInstance(clean["hello"], six.string_types)
+        self.assertIsInstance(clean["hello"], str)
         clean_strict = jsanitize(d, strict=True)
         self.assertEqual(clean_strict["hello"]["a"], 1)
         self.assertEqual(clean_strict["hello"]["b"], 2)
 
         d = {"dt": datetime.datetime.now()}
         clean = jsanitize(d)
-        self.assertIsInstance(clean["dt"], six.string_types)
+        self.assertIsInstance(clean["dt"], str)
         clean = jsanitize(d, allow_bson=True)
         self.assertIsInstance(clean["dt"], datetime.datetime)
 
@@ -149,7 +271,38 @@ class JsonTest(unittest.TestCase):
              "b": ObjectId.from_datetime(datetime.datetime.now())}
         clean = jsanitize(d)
         self.assertEqual(clean["a"], ['b', [1, 2, 3]])
-        self.assertIsInstance(clean["b"], six.string_types)
+        self.assertIsInstance(clean["b"], str)
+
+        rnd_bin = bytes(np.random.rand(10))
+        d = {"a": bytes(rnd_bin)}
+        clean = jsanitize(d, allow_bson=True)
+        self.assertEqual(clean["a"], bytes(rnd_bin))
+        self.assertIsInstance(clean["a"], bytes)
+
+    def test_redirect(self):
+        MSONable.REDIRECT["tests.test_json"] = {
+            "test_class": {"@class": "GoodMSONClass", "@module": "tests.test_json"}
+        }
+
+        d = {
+            "@class": "test_class",
+            "@module": "tests.test_json",
+            "a": 1,
+            "b": 1,
+            "c": 1,
+        }
+
+        obj = json.loads(json.dumps(d), cls=MontyDecoder)
+        self.assertEqual(type(obj), GoodMSONClass)
+
+        d["@class"] = "not_there"
+        obj = json.loads(json.dumps(d), cls=MontyDecoder)
+        self.assertEqual(type(obj), dict)
+
+    def test_redirect_settings_file(self):
+        data = _load_redirect(os.path.join(test_dir, "test_settings.yaml"))
+        self.assertEqual(data, {'old_module': {'old_class': {'@class': 'new_class', '@module': 'new_module'}}})
+
 
 if __name__ == "__main__":
     unittest.main()

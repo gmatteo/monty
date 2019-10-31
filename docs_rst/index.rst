@@ -9,6 +9,7 @@ Monty: Python Made Even Easier
 
 .. image:: https://travis-ci.org/materialsvirtuallab/monty.png?branch=master
 .. image:: https://coveralls.io/repos/github/materialsvirtuallab/monty/badge.svg?branch=master
+.. image:: https://anaconda.org/conda-forge/monty/badges/downloads.svg
 
 Monty is the missing complement to Python. Monty implements supplementary
 useful functions for Python that are not part of the standard library.
@@ -28,23 +29,24 @@ Monty is created to serve as a complement to the Python standard library. It
 provides suite of tools to solve many common problems, and hopefully,
 be a resource to collect the best solutions.
 
-Monty supports Python 2.7-3.x.
+Monty currently supports Python 2.7-3.x, but please note that with effect from
+v3.x, which will be released in Jan 2020, we will completely abandon Py2.7
+support, in line with most other Python packages.
 
 Change Log
 ==========
 
-v1.0.2
+v3.0.1
 ------
-1. Misc bug fixes (tempdir on Windows)
+1. Bug fixes for Windows.
 
-v1.0.1
+v3.0.0
 ------
-1. Use CLoader and CDumper by default for speed.
+1. Py3 only version.
 
-v1.0.0
+v2.0.7
 ------
-1. Ruamel.yaml is now used as the default YAML parser and dumper.
-
+1. MSONable now supports Enum types. (@mkhorton)
 
 :doc:`Older versions </changelog>`
 

@@ -1,7 +1,7 @@
-monty\.tempfile module
-======================
+monty.tempfile module
+=====================
 
 .. automodule:: monty.tempfile
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

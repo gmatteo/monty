@@ -1,7 +1,7 @@
-monty\.os\.path module
-======================
+monty.os.path module
+====================
 
 .. automodule:: monty.os.path
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,7 +1,7 @@
-monty\.functools module
-=======================
+monty.functools module
+======================
 
 .. automodule:: monty.functools
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

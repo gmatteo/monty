@@ -1,7 +1,7 @@
-monty\.subprocess module
-========================
+monty.subprocess module
+=======================
 
 .. automodule:: monty.subprocess
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

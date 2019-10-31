@@ -1,7 +1,7 @@
-monty\.serialization module
-===========================
+monty.serialization module
+==========================
 
 .. automodule:: monty.serialization
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

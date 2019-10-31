@@ -1,15 +1,13 @@
-from __future__ import absolute_import
+"""
+Copying and zipping utilities. Works on directories mostly.
+"""
+
 import os
 import shutil
 import warnings
 from gzip import GzipFile
 
-__author__ = 'Shyue Ping Ong'
-__copyright__ = "Copyright 2014, The Materials Virtual Lab"
-__version__ = '0.1'
-__maintainer__ = 'Shyue Ping Ong'
-__email__ = 'ongsp@ucsd.edu'
-__date__ = '1/24/14'
+from .io import zopen
 
 
 def copy_r(src, dst):
@@ -56,10 +54,10 @@ def gzip_dir(path, compresslevel=6):
         full_f = os.path.join(path, f)
         if not f.lower().endswith("gz"):
             with open(full_f, 'rb') as f_in, \
-                GzipFile('{}.gz'.format(full_f), 'wb',
-                         compresslevel=compresslevel) as f_out:
+                    GzipFile('{}.gz'.format(full_f), 'wb',
+                             compresslevel=compresslevel) as f_out:
                 shutil.copyfileobj(f_in, f_out)
-            shutil.copystat(full_f,'{}.gz'.format(full_f))
+            shutil.copystat(full_f, '{}.gz'.format(full_f))
             os.remove(full_f)
 
 
@@ -76,7 +74,6 @@ def compress_file(filepath, compression="gz"):
     """
     if compression not in ["gz", "bz2"]:
         raise ValueError("Supported compression formats are 'gz' and 'bz2'.")
-    from monty.io import zopen
     if not filepath.lower().endswith(".%s" % compression):
         with open(filepath, 'rb') as f_in, \
                 zopen('%s.%s' % (filepath, compression), 'wb') as f_out:
@@ -112,7 +109,6 @@ def decompress_file(filepath):
     """
     toks = filepath.split(".")
     file_ext = toks[-1].upper()
-    from monty.io import zopen
     if file_ext in ["BZ2", "GZ", "Z"]:
         with open(".".join(toks[0:-1]), 'wb') as f_out, \
                 zopen(filepath, 'rb') as f_in:
@@ -131,3 +127,25 @@ def decompress_dir(path):
         for f in files:
             decompress_file(os.path.join(parent, f))
 
+
+def remove(path, follow_symlink=False):
+    """
+    Implements an remove function that will delete files, folder trees and
+    symlink trees
+
+    1.) Remove a file
+    2.) Remove a symlink and follow into with a recursive rm if follow_symlink
+    3.) Remove directory with rmtree
+
+    Args:
+        path (str): path to remove
+        follow_symlink(bool): follow symlinks and removes whatever is in them
+    """
+    if os.path.isfile(path):
+        os.remove(path)
+    elif os.path.islink(path):
+        if follow_symlink:
+            remove(os.readlink(path))
+        os.unlink(path)
+    else:
+        shutil.rmtree(path)

@@ -1,7 +1,7 @@
-monty\.termcolor module
-=======================
+monty.termcolor module
+======================
 
 .. automodule:: monty.termcolor
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

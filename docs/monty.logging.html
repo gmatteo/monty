@@ -1,26 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>monty.logging module &#8212; monty 1.0.2 documentation</title>
+    <meta charset="utf-8" />
+    <title>monty.logging module &#8212; monty 3.0.2 documentation</title>
     <link rel="stylesheet" href="_static/flasky.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0.2',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="monty.math module" href="monty.math.html" />
@@ -32,8 +23,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -49,7 +39,7 @@
         <li class="right" >
           <a href="monty.json.html" title="monty.json module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">monty 1.0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">monty 3.0.2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="monty.html" accesskey="U">monty package</a> &#187;</li> 
       </ul>
     </div>  
@@ -61,38 +51,32 @@
             
   <div class="section" id="module-monty.logging">
 <span id="monty-logging-module"></span><h1>monty.logging module<a class="headerlink" href="#module-monty.logging" title="Permalink to this headline">¶</a></h1>
-<p>TODO: Modify module doc.</p>
+<p>Logging tools</p>
 <dl class="function">
 <dt id="monty.logging.enable_logging">
-<code class="descname">enable_logging</code><span class="sig-paren">(</span><em>main</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monty/logging.html#enable_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#monty.logging.enable_logging" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">enable_logging</code><span class="sig-paren">(</span><em class="sig-param">main</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monty/logging.html#enable_logging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#monty.logging.enable_logging" title="Permalink to this definition">¶</a></dt>
 <dd><p>This decorator is used to decorate main functions.
 It adds the initialization of the logger and an argument parser that allows
 one to select the loglevel.
 Useful if we are writing simple main functions that call libraries where
 the logging module is used</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>main</strong> – main function.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>main</strong> – main function.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="monty.logging.logged">
-<code class="descname">logged</code><span class="sig-paren">(</span><em>level=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monty/logging.html#logged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#monty.logging.logged" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">logged</code><span class="sig-paren">(</span><em class="sig-param">level=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/monty/logging.html#logged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#monty.logging.logged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Useful logging decorator. If a method is logged, the beginning and end of
 the method call will be logged at a pre-specified level.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> – Level to log method at. Defaults to DEBUG.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>level</strong> – Level to log method at. Defaults to DEBUG.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -119,13 +103,13 @@ the method call will be logged at a pre-specified level.</p>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
